@@ -1,33 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Dood Viewer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dood Viewer - Tanpa Iklan</title>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 30px;
-      max-width: 600px;
-      margin: auto;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header, footer {
       text-align: center;
+      padding: 1em;
+      background-color: #1f1f1f;
     }
-    input {
-      width: 100%;
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2em;
+    }
+
+    input[type="text"] {
+      width: 90%;
+      max-width: 500px;
       padding: 10px;
-      margin: 10px 0;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background-color: #222;
+      color: #fff;
     }
+
     button {
+      margin-top: 1em;
       padding: 10px 20px;
+      background-color: #03DAC6;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
       cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00c6ae;
+    }
+
+    #video-container {
+      margin-top: 2em;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 450px;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .download-options {
+      margin-top: 1em;
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .download-options button {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+    }
+
+    @media (max-width: 600px) {
+      iframe {
+        height: 240px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Dood.to Video Viewer</h1>
-  <form action="/view" method="POST">
-    <input type="text" name="url" placeholder="Tempel link Dood.to di sini" required>
-    <br>
-    <button type="submit">Tampilkan Video</button>
-  </form>
+  <header>
+    <h1>Dood Viewer - Bebas Iklan</h1>
+  </header>
+  <main>
+    <input type="text" id="videoUrl" placeholder="Tempel link Dood.to di sini" />
+    <button onclick="tampilkanVideo()">Tampilkan Video</button>
+    
+    <div id="video-container"></div>
+    <div class="download-options" id="download-section" style="display:none;">
+      <button>Download 360p</button>
+      <button>Download 480p</button>
+      <button>Download 720p</button>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 - dood-free by rakhaaynd
+  </footer>
+
+  <script>
+    function tampilkanVideo() {
+      const url = document.getElementById("videoUrl").value.trim();
+      const container = document.getElementById("video-container");
+      const downloadSection = document.getElementById("download-section");
+
+      if (!url.includes("dood.to")) {
+        container.innerHTML = "<p>Link tidak valid!</p>";
+        downloadSection.style.display = "none";
+        return;
+      }
+
+      fetch("/getVideo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          container.innerHTML = `<iframe src="${data.videoUrl}" allowfullscreen></iframe>`;
+          downloadSection.style.display = "flex";
+        } else {
+          container.innerHTML = `<p style="color:red;">${data.message}</p>`;
+          downloadSection.style.display = "none";
+        }
+      })
+      .catch(err => {
+        container.innerHTML = `<p style="color:red;">Terjadi kesalahan.</p>`;
+        downloadSection.style.display = "none";
+      });
+    }
+  </script>
 </body>
 </html>
