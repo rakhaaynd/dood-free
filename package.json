@@ -1,16 +1,16 @@
 {
-  "name": "dood-free",
+  "name": "dood-free-multi",
   "version": "1.0.0",
-  "description": "Viewer video alternatif tanpa iklan",
+  "description": "Viewer video tanpa iklan untuk berbagai mirror",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "postinstall": "puppeteer install"
   },
   "dependencies": {
-    "axios": "^1.6.7",
-    "body-parser": "^1.20.2",
-    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.18.2",
+    "puppeteer": "^22.8.2",
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "body-parser": "^1.20.2"
   }
 }
