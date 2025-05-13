@@ -1,51 +1,46 @@
-const express = require('express');
-const puppeteer = require('puppeteer');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const axios = require("axios");
+const cheerio = require("cheerio");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
+app.post("/getVideo", async (req, res) => {
+  const { url } = req.body;
 
-app.post('/view', async (req, res) => {
-  const doodUrl = req.body.url;
-
-  if (!doodUrl || !doodUrl.includes('dood.to/e/')) {
-    return res.send('Link tidak valid.');
+  if (!url || !url.includes("dood.to")) {
+    return res.json({ success: false, message: "Link tidak valid." });
   }
 
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
+      },
     });
 
-    const page = await browser.newPage();
-    await page.goto(doodUrl, { waitUntil: 'networkidle2' });
+    const $ = cheerio.load(response.data);
+    const iframeSrc = $("iframe").attr("src");
 
-    const videoUrl = await page.evaluate(() => {
-      const video = document.querySelector('video');
-      return video ? video.src : null;
-    });
-
-    await browser.close();
-
-    if (!videoUrl) {
-      return res.send('Gagal menemukan video.');
+    if (!iframeSrc) {
+      return res.json({ success: false, message: "Gagal menemukan video." });
     }
 
-    res.send(`
-      <h2>Video dari: ${doodUrl}</h2>
-      <video src="${videoUrl}" controls autoplay style="width: 100%; max-width: 600px;"></video>
-      <br><a href="/">Kembali</a>
-    `);
+    const fullUrl = iframeSrc.startsWith("http")
+      ? iframeSrc
+      : `https:${iframeSrc}`;
+
+    return res.json({ success: true, videoUrl: fullUrl });
   } catch (err) {
-    console.error(err);
-    res.send('Terjadi kesalahan saat memproses link.');
+    return res.json({ success: false, message: "Terjadi kesalahan saat mengambil video." });
   }
 });
 
