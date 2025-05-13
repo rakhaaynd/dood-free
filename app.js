@@ -8,6 +8,19 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const supportedDomains = [
+  "dood.to",
+  "dood.lu",
+  "doob.lu",
+  "stream.ga",
+  "doods.am",
+  "pooo.st",
+  "poophd.pro",
+  "poophd.me",
+  "pay4fans.com",
+  "lulu.st"
+];
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -15,8 +28,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.post("/getVideo", async (req, res) => {
   const { url } = req.body;
 
-  if (!url || !url.includes("dood.to")) {
-    return res.json({ success: false, message: "Link tidak valid." });
+  if (!url || !supportedDomains.some(domain => url.includes(domain))) {
+    return res.json({ success: false, message: "Link tidak valid atau situs belum didukung." });
   }
 
   try {
@@ -34,11 +47,9 @@ app.post("/getVideo", async (req, res) => {
       return res.json({ success: false, message: "Gagal menemukan video." });
     }
 
-    const fullUrl = iframeSrc.startsWith("http")
-      ? iframeSrc
-      : `https:${iframeSrc}`;
-
+    const fullUrl = iframeSrc.startsWith("http") ? iframeSrc : `https:${iframeSrc}`;
     return res.json({ success: true, videoUrl: fullUrl });
+
   } catch (err) {
     return res.json({ success: false, message: "Terjadi kesalahan saat mengambil video." });
   }
