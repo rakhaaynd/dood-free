@@ -1,18 +1,16 @@
 {
   "name": "dood-free",
   "version": "1.0.0",
-  "description": "Viewer video Dood.to tanpa iklan",
+  "description": "Viewer video alternatif tanpa iklan",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "postinstall": "puppeteer install"
+    "start": "node app.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "puppeteer": "^22.8.2",
-    "axios": "^1.6.0",
+    "axios": "^1.6.7",
+    "body-parser": "^1.20.2",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
+    "express": "^4.18.2"
   }
 }
