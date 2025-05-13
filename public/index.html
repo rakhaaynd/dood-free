@@ -68,20 +68,6 @@
       border-radius: 8px;
     }
 
-    .download-options {
-      margin-top: 1em;
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-      flex-wrap: wrap;
-    }
-
-    .download-options button {
-      background-color: #333;
-      color: #fff;
-      border: 1px solid #555;
-    }
-
     @media (max-width: 600px) {
       iframe {
         height: 240px;
@@ -94,44 +80,26 @@
     <h1>Video Viewer - Bebas Iklan</h1>
   </header>
   <main>
-    <input type="text" id="videoUrl" placeholder="Tempel link video dari situs supported" />
+    <input type="text" id="videoUrl" placeholder="Tempel link video di sini..." />
     <button onclick="tampilkanVideo()">Tampilkan Video</button>
-    
+
     <div id="video-container"></div>
-    <div class="download-options" id="download-section" style="display:none;">
-      <button>Download 360p</button>
-      <button>Download 480p</button>
-      <button>Download 720p</button>
-    </div>
   </main>
   <footer>
     &copy; 2025 - dood-free by rakhaaynd
   </footer>
 
   <script>
-    const supportedDomains = [
-      "dood.to",
-      "dood.lu",
-      "doob.lu",
-      "stream.ga",
-      "doods.am",
-      "pooo.st",
-      "poophd.pro",
-      "poophd.me",
-      "pay4fans.com",
-      "lulu.st"
-    ];
-
     function tampilkanVideo() {
       const url = document.getElementById("videoUrl").value.trim();
       const container = document.getElementById("video-container");
-      const downloadSection = document.getElementById("download-section");
 
-      if (!supportedDomains.some(domain => url.includes(domain))) {
-        container.innerHTML = "<p>Link tidak valid atau belum didukung!</p>";
-        downloadSection.style.display = "none";
+      if (!url.includes(".")) {
+        container.innerHTML = "<p>Link tidak valid!</p>";
         return;
       }
+
+      container.innerHTML = "<p>Memuat video...</p>";
 
       fetch("/getVideo", {
         method: "POST",
@@ -142,15 +110,12 @@
       .then(data => {
         if (data.success) {
           container.innerHTML = `<iframe src="${data.videoUrl}" allowfullscreen></iframe>`;
-          downloadSection.style.display = "flex";
         } else {
           container.innerHTML = `<p style="color:red;">${data.message}</p>`;
-          downloadSection.style.display = "none";
         }
       })
       .catch(err => {
         container.innerHTML = `<p style="color:red;">Terjadi kesalahan.</p>`;
-        downloadSection.style.display = "none";
       });
     }
   </script>
