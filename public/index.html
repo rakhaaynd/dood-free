@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dood Viewer - Tanpa Iklan</title>
+  <title>Video Viewer - Tanpa Iklan</title>
   <style>
     body {
       margin: 0;
@@ -91,10 +91,10 @@
 </head>
 <body>
   <header>
-    <h1>Dood Viewer - Bebas Iklan</h1>
+    <h1>Video Viewer - Bebas Iklan</h1>
   </header>
   <main>
-    <input type="text" id="videoUrl" placeholder="Tempel link Dood.to di sini" />
+    <input type="text" id="videoUrl" placeholder="Tempel link video dari situs supported" />
     <button onclick="tampilkanVideo()">Tampilkan Video</button>
     
     <div id="video-container"></div>
@@ -109,13 +109,26 @@
   </footer>
 
   <script>
+    const supportedDomains = [
+      "dood.to",
+      "dood.lu",
+      "doob.lu",
+      "stream.ga",
+      "doods.am",
+      "pooo.st",
+      "poophd.pro",
+      "poophd.me",
+      "pay4fans.com",
+      "lulu.st"
+    ];
+
     function tampilkanVideo() {
       const url = document.getElementById("videoUrl").value.trim();
       const container = document.getElementById("video-container");
       const downloadSection = document.getElementById("download-section");
 
-      if (!url.includes("dood.to")) {
-        container.innerHTML = "<p>Link tidak valid!</p>";
+      if (!supportedDomains.some(domain => url.includes(domain))) {
+        container.innerHTML = "<p>Link tidak valid atau belum didukung!</p>";
         downloadSection.style.display = "none";
         return;
       }
