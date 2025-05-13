@@ -1,60 +1,55 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const axios = require("axios");
-const cheerio = require("cheerio");
+const puppeteer = require("puppeteer");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const supportedDomains = [
-  "dood.to",
-  "dood.lu",
-  "doob.lu",
-  "stream.ga",
-  "doods.am",
-  "pooo.st",
-  "poophd.pro",
-  "poophd.me",
-  "pay4fans.com",
-  "lulu.st"
-];
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+async function getDirectVideoUrl(pageUrl) {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.goto(pageUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+    await page.waitForSelector("iframe", { timeout: 10000 });
+    const iframeSrc = await page.$eval("iframe", (iframe) => iframe.src);
+
+    return iframeSrc.startsWith("http") ? iframeSrc : `https:${iframeSrc}`;
+  } catch (err) {
+    throw new Error("Gagal menemukan iframe.");
+  } finally {
+    await browser.close();
+  }
+}
+
 app.post("/getVideo", async (req, res) => {
   const { url } = req.body;
 
-  if (!url || !supportedDomains.some(domain => url.includes(domain))) {
-    return res.json({ success: false, message: "Link tidak valid atau situs belum didukung." });
+  if (!url || !url.includes(".")) {
+    return res.json({ success: false, message: "Link tidak valid." });
   }
 
   try {
-    const response = await axios.get(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123 Safari/537.36",
-      },
-    });
-
-    const $ = cheerio.load(response.data);
-    const iframeSrc = $("iframe").attr("src");
-
-    if (!iframeSrc) {
-      return res.json({ success: false, message: "Gagal menemukan video." });
-    }
-
-    const fullUrl = iframeSrc.startsWith("http") ? iframeSrc : `https:${iframeSrc}`;
-    return res.json({ success: true, videoUrl: fullUrl });
-
+    const videoUrl = await getDirectVideoUrl(url);
+    return res.json({ success: true, videoUrl });
   } catch (err) {
-    return res.json({ success: false, message: "Terjadi kesalahan saat mengambil video." });
+    return res.json({
+      success: false,
+      message: "Gagal mengambil video: " + err.message
+    });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server jalan di http://localhost:${PORT}`);
+  console.log(`Server aktif di http://localhost:${PORT}`);
 });
